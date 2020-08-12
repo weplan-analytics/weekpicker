@@ -26,11 +26,11 @@
         module.exports = factory(moment, jQuery);
     } else {
         // Browser globals
-        root.daterangepicker = factory(root.moment, root.jQuery);
+        root.weekpicker = factory(root.moment, root.jQuery);
     }
 }(this, function(moment, $) {
-    var DateRangePicker = function(element, options, cb) {
-
+    var WeekPicker = function(element, options, cb) {
+        moment.locale('es');
         //default settings for options
         this.parentEl = 'body';
         this.element = $(element);
@@ -44,7 +44,7 @@
         this.showDropdowns = false;
         this.minYear = moment().subtract(100, 'year').format('YYYY');
         this.maxYear = moment().add(100, 'year').format('YYYY');
-        this.showWeekNumbers = false;
+        this.showWeekNumbers = true;
         this.showISOWeekNumbers = false;
         this.showCustomRangeLabel = true;
         this.timePicker = false;
@@ -446,9 +446,9 @@
 
     };
 
-    DateRangePicker.prototype = {
+    WeekPicker.prototype = {
 
-        constructor: DateRangePicker,
+        constructor: WeekPicker,
 
         setStartDate: function(startDate) {
             if (typeof startDate === 'string')
@@ -458,21 +458,14 @@
                 this.startDate = moment(startDate);
 
             if (!this.timePicker)
-                this.startDate = this.startDate.startOf('day');
-
-            if (this.timePicker && this.timePickerIncrement)
-                this.startDate.minute(Math.round(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
+                this.startDate = this.startDate.startOf('week');
 
             if (this.minDate && this.startDate.isBefore(this.minDate)) {
                 this.startDate = this.minDate.clone();
-                if (this.timePicker && this.timePickerIncrement)
-                    this.startDate.minute(Math.round(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
             }
 
             if (this.maxDate && this.startDate.isAfter(this.maxDate)) {
                 this.startDate = this.maxDate.clone();
-                if (this.timePicker && this.timePickerIncrement)
-                    this.startDate.minute(Math.floor(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
             }
 
             if (!this.isShowing)
@@ -816,7 +809,7 @@
                         classes.push('active', 'end-date');
 
                     //highlight dates in-between the selected dates
-                    if (this.endDate != null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
+                    if (this.endDate != null && calendar[row][col] > this.startDate.startOf('week') && calendar[row][col] < this.endDate.endOf('week'))
                         classes.push('in-range');
 
                     //apply custom classes for this date
@@ -1275,7 +1268,7 @@
                     var cal = $(el).parents('.drp-calendar');
                     var dt = cal.hasClass('left') ? leftCalendar.calendar[row][col] : rightCalendar.calendar[row][col];
 
-                    if ((dt.isAfter(startDate) && dt.isBefore(date)) || dt.isSame(date, 'day')) {
+                    if ((dt.isAfter(startDate.startOf('week')) && dt.isBefore(date.endOf('week'))) || dt.isSame(date, 'day')) {
                         $(el).addClass('in-range');
                     } else {
                         $(el).removeClass('in-range');
@@ -1562,17 +1555,17 @@
 
     };
 
-    $.fn.daterangepicker = function(options, callback) {
-        var implementOptions = $.extend(true, {}, $.fn.daterangepicker.defaultOptions, options);
+    $.fn.weekpicker = function(options, callback) {
+        var implementOptions = $.extend(true, {}, $.fn.weekpicker.defaultOptions, options);
         this.each(function() {
             var el = $(this);
             if (el.data('daterangepicker'))
                 el.data('daterangepicker').remove();
-            el.data('daterangepicker', new DateRangePicker(el, implementOptions, callback));
+            el.data('daterangepicker', new WeekPicker(el, implementOptions, callback));
         });
         return this;
     };
 
-    return DateRangePicker;
+    return WeekPicker;
 
 }));
